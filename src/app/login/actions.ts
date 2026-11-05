@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { supabaseUrl } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 
 export type LoginState = { error?: string };
@@ -22,7 +23,12 @@ function loginErrorMessage(code: string | undefined, status: number | undefined)
     case "over_request_rate_limit":
       return "Too many attempts. Wait a minute and try again.";
   }
-  if (!status || status >= 500) return "The login service couldn't be reached. Check the Supabase settings, or try again shortly.";
+  if (!status || status >= 500) {
+    const hint = /^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(supabaseUrl)
+      ? "Check the project isn't paused in Supabase."
+      : "That doesn't look like a Supabase project URL. It should be exactly https://<project-ref>.supabase.co (Project Settings → Data API). Fix NEXT_PUBLIC_SUPABASE_URL in Vercel and redeploy.";
+    return `The login service at ${supabaseUrl} couldn't be reached. ${hint}`;
+  }
   if (status === 401 || status === 403) return "The app's Supabase key was rejected. Check NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in Vercel.";
   return "Sign-in failed. Please try again.";
 }
