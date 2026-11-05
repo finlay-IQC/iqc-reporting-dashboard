@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+/*
+ * IQC theme tokens. Brand colours are placeholders — swap --brand / --brand-ink
+ * for IQC's real palette once confirmed. Everything else derives from these.
+ */
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #f1f3f6;
+  --border: #e3e6eb;
+  --ink: #0f1729;
+  --ink-2: #4b5567;
+  --ink-3: #7a8396;
+  --brand: #1d3fd8;
+  --brand-ink: #ffffff;
+  --brand-soft: #e8edff;
+  --sidebar: #0c1426;
+  --sidebar-ink: #c9d1e3;
+  --sidebar-active: #1a2540;
+  --good: #0f7a3d;
+  --bad: #b42318;
+  --warn: #9a6700;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b0f19;
+    --surface: #121826;
+    --surface-2: #182033;
+    --border: #253047;
+    --ink: #e8ecf4;
+    --ink-2: #a9b3c6;
+    --ink-3: #7c879c;
+    --brand: #6f8bff;
+    --brand-ink: #0b0f19;
+    --brand-soft: #1b2650;
+    --sidebar: #080c15;
+    --sidebar-ink: #a9b3c6;
+    --sidebar-active: #172038;
+    --good: #4cc38a;
+    --bad: #ff7b72;
+    --warn: #e3b341;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--border);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-soft: var(--brand-soft);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-ink: var(--sidebar-ink);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-good: var(--good);
+  --color-bad: var(--bad);
+  --color-warn: var(--warn);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
