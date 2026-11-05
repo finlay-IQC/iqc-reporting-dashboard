@@ -29,7 +29,7 @@ SQL
 
 for f in supabase/migrations/*.sql; do echo "→ $f"; "${PSQL[@]}" -f "$f"; done
 "${PSQL[@]}" -c "grant usage on schema public to authenticated; grant select, insert, update, delete on all tables in schema public to authenticated;"
-echo "→ supabase/seed.sql"; "${PSQL[@]}" -f supabase/seed.sql
+echo "→ supabase/seed.sql (twice, to prove it is re-runnable)"; "${PSQL[@]}" -f supabase/seed.sql >/dev/null; "${PSQL[@]}" -f supabase/seed.sql
 
 "${PSQL[@]}" -f scripts/sql/sanity-checks.sql
 echo "✓ migrations, seed and sanity checks passed"

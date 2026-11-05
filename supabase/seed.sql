@@ -5,6 +5,9 @@
 -- Shape mirrors a franchise brand: one shared ad account with a campaign per
 -- partner, plus separate recruitment and national accounts.
 
+-- Safe to re-run: clears any previous demo data first (cascades to everything under it).
+delete from public.clients where slug = 'demo-franchise';
+
 select setseed(0.42);
 
 with c as (
