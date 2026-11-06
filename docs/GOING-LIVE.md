@@ -2,6 +2,8 @@
 
 About 30–45 minutes the first time, then about 5 minutes per extra client.
 
+**Landing-page leads (no Meta lead forms)?** Make sure every ad has the URL parameters from [ATTRIBUTION.md](ATTRIBUTION.md). That's what links each GHL lead to its campaign and ad.
+
 ## 1. Meta: create a System User token (once, covers every client)
 
 You need admin access to IQC's Meta Business Manager.
@@ -11,11 +13,12 @@ You need admin access to IQC's Meta Business Manager.
 3. **Create the System User.** In business.facebook.com → **Settings → Users → System users → Add**, name it "IQC Reporting" with role **Admin**.
 4. **Give it access to client assets.** With the system user selected, click **Assign assets**:
    - **Ad accounts:** tick each client ad account and give it *View performance* (or "Manage" if that's the only option).
-   - **Pages:** tick each client Facebook Page. This is needed later for lead form leads.
    - **Apps:** tick "IQC Reporting".
+   - **Pages:** only needed if a client runs Meta **lead form** ads. Skip this for landing-page-only clients.
 
    Client ad accounts must be shared with IQC's Business Manager (as a partner) before you can assign them.
-5. **Generate the token.** Click **Generate new token** → choose the app → **Token expiration: Never** → tick `ads_read`, `leads_retrieval`, `pages_show_list`, `pages_read_engagement`, `business_management` → **Generate** → copy it.
+5. **Generate the token.** Click **Generate new token** → choose the app → **Token expiration: Never** → tick `ads_read` and `business_management` → **Generate** → copy it.
+   Only if you run lead form ads, also tick `leads_retrieval`, `pages_show_list` and `pages_read_engagement`.
 
 ## 2. Vercel: add four settings
 
