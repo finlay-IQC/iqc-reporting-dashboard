@@ -8,3 +8,5 @@
 - CRM code must return `NormalizedLead` (`src/lib/crm/types.ts`). Nothing outside `src/lib/crm/` should know which CRM a lead came from.
 - Before committing: `npm run typecheck && npm run lint && npm test && npm run db:test`.
 - Brand colours in `src/app/globals.css` are placeholders until IQC's real palette and logo arrive.
+- CRM tokens live encrypted in `crm_connections` (service-only table; `src/lib/crypto.ts`). Never log or return them. Meta uses one env token (`META_ACCESS_TOKEN`).
+- `META_GRAPH_URL` / `GHL_API_URL` override the API base URLs, so syncs can be tested end-to-end against a fake server.

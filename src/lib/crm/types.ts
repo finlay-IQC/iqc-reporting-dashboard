@@ -46,12 +46,30 @@ export type CrmClientConfig = {
   slug: string;
   crm_provider: CrmProvider;
   crm_account_id: string; // GHL location ID / Zoho org ID
+  token: string; // decrypted API token — server-side only
+};
+
+/** A deal/opportunity reduced to what the dashboard needs. */
+export type CrmStage = {
+  crm_id: string; // the lead's CRM ID
+  pipeline_name: string | null;
+  stage_name: string | null;
+  lifecycle_hint: Lifecycle | null;
+  value: number | null;
 };
 
 export interface CrmAdapter {
   provider: CrmProvider;
-  /** Pages through leads created or updated since `since`, yielding batches. */
-  fetchLeads(client: CrmClientConfig, opts: { since: Date }): AsyncIterable<NormalizedLead[]>;
+  /** Cheap call that proves the credentials work. Returns the account's display name. */
+  testConnection(client: CrmClientConfig): Promise<string>;
+  /**
+   * Leads created since `since` (with their current stage), plus the current
+   * stage of every lead the CRM has a deal for — so older leads that progress
+   * (e.g. won this week) are updated too.
+   */
+  fetchLeads(client: CrmClientConfig, opts: { since: Date }): Promise<{ leads: NormalizedLead[]; stages: CrmStage[] }>;
+  /** Every pipeline stage name, so stage mappings can be suggested. */
+  fetchStageNames(client: CrmClientConfig): Promise<{ pipeline_name: string; stage_name: string }[]>;
   /** Turns a CRM webhook payload into a lead, or null if the event isn't relevant. */
-  parseWebhook?(client: CrmClientConfig, payload: unknown): Promise<NormalizedLead | null>;
+  handleWebhook(client: CrmClientConfig, payload: unknown): Promise<NormalizedLead | null>;
 }

@@ -19,6 +19,10 @@ PSQL=(psql -h /tmp -p "$PORT" -U postgres -v ON_ERROR_STOP=1 -q -X)
 
 "${PSQL[@]}" <<'SQL'
 create role anon nologin; create role authenticated nologin; create role service_role nologin bypassrls;
+-- Mirror Supabase: API roles get privileges on new objects by default; migrations then revoke.
+grant usage on schema public to anon, authenticated, service_role;
+alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
+alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
 create schema auth;
 create table auth.users (id uuid primary key);
 create function auth.uid() returns uuid language sql stable as $$
@@ -28,7 +32,6 @@ grant execute on function auth.uid() to authenticated, anon;
 SQL
 
 for f in supabase/migrations/*.sql; do echo "→ $f"; "${PSQL[@]}" -f "$f"; done
-"${PSQL[@]}" -c "grant usage on schema public to authenticated; grant select, insert, update, delete on all tables in schema public to authenticated;"
 echo "→ supabase/seed.sql (twice, to prove it is re-runnable)"; "${PSQL[@]}" -f supabase/seed.sql >/dev/null; "${PSQL[@]}" -f supabase/seed.sql
 
 "${PSQL[@]}" -f scripts/sql/sanity-checks.sql

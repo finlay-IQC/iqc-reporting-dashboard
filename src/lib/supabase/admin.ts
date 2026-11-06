@@ -8,6 +8,6 @@ import { supabaseUrl } from "@/lib/env";
  */
 export function createAdminClient() {
   const secret = process.env.SUPABASE_SECRET_KEY;
-  if (!supabaseUrl || !secret) throw new Error("SUPABASE_SECRET_KEY / NEXT_PUBLIC_SUPABASE_URL not set");
+  if (!supabaseUrl || !secret) throw new Error("SUPABASE_SECRET_KEY isn't set. Add it in Vercel (Supabase → Project Settings → API Keys → secret key) and redeploy.");
   return createClient(supabaseUrl, secret, { auth: { persistSession: false, autoRefreshToken: false } });
 }

@@ -130,9 +130,48 @@ export async function getSettingsData() {
   const [accounts, rules, mappings, runs] = await Promise.all([
     supabase.from("meta_ad_accounts").select("id, client_id, name, currency, default_segment_id, is_active, last_synced_at").order("name"),
     supabase.from("segment_rules").select("id, segment_id, ad_account_id, match_type, pattern, priority").order("priority"),
-    supabase.from("stage_mappings").select("id, client_id, pipeline_name, stage_name, lifecycle").order("stage_name"),
-    supabase.from("sync_runs").select("id, source, client_id, status, started_at, finished_at, error").order("started_at", { ascending: false }).limit(15),
+    supabase.from("stage_mappings").select("id, client_id, pipeline_name, stage_name, lifecycle").order("client_id").order("pipeline_name", { nullsFirst: true }).order("stage_name"),
+    supabase.from("sync_runs").select("id, source, client_id, status, started_at, finished_at, error, stats").order("started_at", { ascending: false }).limit(15),
   ]);
   for (const r of [accounts, rules, mappings, runs]) if (r.error) throw r.error;
   return { accounts: accounts.data ?? [], rules: rules.data ?? [], mappings: mappings.data ?? [], runs: runs.data ?? [] };
+}
+
+export type ConnectionStatus = {
+  client_id: string;
+  provider: string;
+  account_id: string;
+  token_hint: string | null;
+  status: "untested" | "ok" | "error";
+  last_error: string | null;
+  last_synced_at: string | null;
+};
+
+/**
+ * CRM connection health (never the token). The table is service-only, so read
+ * it with the admin client after the auth check. `null` = the table doesn't
+ * exist yet (database update not run) or the secret key is missing.
+ */
+export async function getConnections(): Promise<ConnectionStatus[] | null> {
+  await getCurrentUser();
+  if (!(process.env.SUPABASE_SECRET_KEY ?? "").trim()) return null;
+  const { createAdminClient } = await import("@/lib/supabase/admin");
+  const { data, error } = await createAdminClient()
+    .from("crm_connections")
+    .select("client_id, provider, account_id, token_hint, status, last_error, last_synced_at");
+  if (error?.code === "PGRST205" || error?.code === "42P01") return null;
+  if (error) throw error;
+  return (data ?? []) as ConnectionStatus[];
+}
+
+/** Which server-side settings exist (values never leave the server). */
+export async function getSetupChecks() {
+  await getCurrentUser();
+  const has = (k: string, min = 1) => (process.env[k] ?? "").trim().length >= min;
+  return {
+    secretKey: has("SUPABASE_SECRET_KEY"),
+    encryptionKey: has("TOKEN_ENCRYPTION_KEY", 32),
+    metaToken: has("META_ACCESS_TOKEN"),
+    cronSecret: has("CRON_SECRET", 16),
+  };
 }

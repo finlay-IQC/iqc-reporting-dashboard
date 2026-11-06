@@ -52,3 +52,34 @@ do $$ begin
   end;
 end $$;
 reset role;
+
+\echo '— crm_connections and apply_lead_stages are service-only'
+insert into crm_connections (client_id, provider, account_id, token_ciphertext)
+select id, 'ghl', 'LOC-TEST', 'v1:x:y:z' from clients where slug = 'demo-franchise';
+set role authenticated;
+select set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222', false);
+do $$ begin
+  begin
+    perform count(*) from crm_connections;
+    raise exception 'authenticated user could read crm_connections';
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    perform apply_lead_stages(gen_random_uuid(), '[]'::jsonb);
+    raise exception 'authenticated user could call apply_lead_stages';
+  exception when insufficient_privilege then null;
+  end;
+end $$;
+reset role;
+
+\echo '— apply_lead_stages updates only changed leads'
+do $$
+declare c uuid; n int;
+begin
+  select id into c from clients where slug = 'demo-franchise';
+  n := apply_lead_stages(c, '[{"crm_id":"demo-1","pipeline_name":"Sales Pipeline","stage_name":"Won","lifecycle_hint":"won","value":1234}]');
+  if n <> 1 then raise exception 'expected 1 update, got %', n; end if;
+  n := apply_lead_stages(c, '[{"crm_id":"demo-1","pipeline_name":"Sales Pipeline","stage_name":"Won","lifecycle_hint":"won","value":1234}]');
+  if n <> 0 then raise exception 'expected no-op on repeat, got %', n; end if;
+  if (select lifecycle from lead_attribution where crm_id = 'demo-1') <> 'won' then raise exception 'stage not applied'; end if;
+end $$;

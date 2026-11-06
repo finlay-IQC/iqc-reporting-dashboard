@@ -8,7 +8,7 @@ Lead and Meta Ads reporting for The IQ Collective's clients. It joins CRM leads 
 
 - **Next.js 16** (App Router, TypeScript, Tailwind v4), hosted on **Vercel**
 - **Supabase** (Postgres, Auth, row-level security), in an EU region
-- Direct **Meta Marketing API** and **GHL API** syncs, run by Vercel Cron *(build steps 2–3)*
+- Direct **Meta Marketing API** and **GHL API** syncs: daily via Vercel Cron, on demand from Settings, and instant new leads via a GHL webhook
 
 ## How it fits together
 
@@ -24,6 +24,16 @@ GHL (or Zoho) ──► CRM adapter ──► leads (one standard format) ──
 - **CRM-agnostic.** Adapters in `src/lib/crm/` turn CRM records into `NormalizedLead`. Adding Zoho means writing one adapter.
 
 Key SQL lives in `supabase/migrations/`: the views `campaign_segments`, `lead_attribution` and `segment_daily`.
+
+## Connecting live data
+
+Step-by-step guide: **[docs/GOING-LIVE.md](docs/GOING-LIVE.md)**. In short: one Meta System User token in Vercel, then each client is connected from **Settings → Connect a client** (Meta ad account IDs, plus GHL Location ID and Private Integration token, stored encrypted).
+
+How syncing works:
+- **Meta** (`src/lib/meta/`): ad-level daily insights, plus campaign, ad set and ad structure. The first sync covers 90 days; later syncs re-pull the last 7 days, because Meta revises recent results.
+- **GHL** (`src/lib/crm/ghl.ts`): contacts become leads (first-touch attribution and UTMs), and opportunities give stage and value. The first sync covers 90 days; later syncs pick up from the last sync. Stage changes on older leads are applied too, and new pipeline stages get an auto-suggested funnel mapping.
+- **Triggers**: `/api/cron/sync` (daily, `CRON_SECRET`), **Sync now** in Settings, and `/api/webhooks/ghl/<clientId>?key=…` for instant new leads.
+- Every run is logged in `sync_runs` and shown in Settings.
 
 ## Setup
 
@@ -69,8 +79,8 @@ With Docker you can also run the full local stack with `npx supabase start`.
 ## Roadmap
 
 1. ✅ App scaffold, schema, auth, IQC branding, demo data
-2. Meta sync: accounts, campaigns, ad sets, ads, daily ad-level insights, lead form leads
-3. GHL adapter: contacts and opportunities sync, plus a new-lead webhook
-4. Reporting: trend charts, campaign and ad breakdowns, editing segment rules and stage mappings in the UI
+2. ✅ Meta sync: accounts, campaigns, ad sets, ads, daily ad-level insights
+3. ✅ GHL adapter: contacts and opportunities sync, new-lead webhook, client and stage management in Settings
+4. Reporting: trend charts, campaign and ad breakdowns, Meta lead form leads pulled directly
 5. Deploy to the IQC subdomain
 6. Zoho adapter, then the TFO rollout
