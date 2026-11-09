@@ -21,6 +21,8 @@ function token(): string {
 
 function explain(code: number | undefined, message: string): string {
   if (code === 190) return `Meta token is invalid or expired — generate a new System User token. (${message})`;
+  if (/api access blocked/i.test(message))
+    return `Meta blocked the app from this ad account. This usually happens when the ad account is owned by another business portfolio and the app only has Standard Access to ads_read: request Advanced Access in the Meta app's App Review (needs IQC's business verification). See docs/GOING-LIVE.md. (${message})`;
   if (code === 200 || code === 10 || (code === 100 && /permission/i.test(message)))
     return `Meta says the token doesn't have access to this ad account. Assign the ad account to the System User in Business Settings. (${message})`;
   if ([4, 17, 32, 613, 80000, 80003, 80004].includes(code ?? -1)) return `Meta rate limit hit — the next sync will catch up. (${message})`;

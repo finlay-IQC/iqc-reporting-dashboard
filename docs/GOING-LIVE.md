@@ -16,7 +16,8 @@ You need admin access to IQC's Meta Business Manager.
    - **Apps:** tick "IQC Reporting".
    - **Pages:** only needed if a client runs Meta **lead form** ads. Skip this for landing-page-only clients.
 
-   Client ad accounts must be shared with IQC's Business Manager (as a partner) before you can assign them.
+   Client ad accounts must be shared with IQC's Business Manager (as a partner) before you can assign them: in the client's portfolio, **Ad accounts → Assign partner** → IQC's business portfolio ID.
+   Ad accounts owned by a **client's** portfolio also need the app to have **Advanced Access** to `ads_read` (see "If something fails"). Accounts owned by IQC work with Standard Access.
 5. **Generate the token.** Click **Generate new token** → choose the app → **Token expiration: Never** → tick `ads_read` and `business_management` → **Generate** → copy it.
    Only if you run lead form ads, also tick `leads_retrieval`, `pages_show_list` and `pages_read_engagement`.
 
@@ -86,6 +87,7 @@ Every sync shows under **Settings → Recent syncs** with the reason. Common one
 |---|---|
 | Meta token is invalid or expired | Generate a new System User token (step 1.5) and update it in Vercel |
 | Token doesn't have access to this ad account | Assign the ad account to the System User (step 1.4) |
+| Meta blocked the app from this ad account (API access blocked) | The ad account is owned by the client's own business portfolio. Share it with IQC as a partner, then give the app **Advanced Access** to `ads_read`: developers.facebook.com → your app → **App Review → Permissions and features** → `ads_read` → **Request advanced access**. This needs IQC's **business verification** (Business Settings → Security Center). |
 | GHL rejected the token | Re-create the Private Integration token and re-enter it in Settings |
 | GHL token is missing a scope | Edit the Private Integration and add the three scopes |
 | Couldn't decrypt the stored CRM token | `TOKEN_ENCRYPTION_KEY` changed. Re-enter each client's GHL token. |
